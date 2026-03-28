@@ -19,7 +19,7 @@
 - `csv-upload-analysis`: CSV 파일 업로드, 헤더 자동 감지, 데이터 타입 탐지, AI 컬럼명 추론, 사용자 수정 기능
 - `ai-graph-conversation`: AI와 SSE 기반 실시간 대화, 인사이트 추천, SQL 생성 (DuckDB용), 그래프 설정 생성
 - `graph-basket`: 그래프 설정 저장, 목록 조회, 미리보기, 개별 삭제, 일괄 HTML 다운로드
-- `chart-rendering`: Chart.js 기반 꺾은선/막대/도넛/산점도 그래프 렌더링, 실시간 업데이트
+- `chart-rendering`: ECharts 기반 다양한 차트 타입 (line/bar/pie/scatter/heatmap 등), 실시간 업데이트
 
 ### Modified Capabilities
 
@@ -29,6 +29,6 @@
 
 - **신규 프로젝트**: `csv-graph-chat/` (FastAPI 백엔드 + React 프론트엔드)
 - **백엔드 의존성**: FastAPI, duckdb, openai (또는 z.ai), python-multipart, sse-starlette
-- **프론트엔드 의존성**: React, Vite, Zustand, TailwindCSS, Chart.js, Axios
+- **프론트엔드 의존성**: React, Vite, Zustand, TailwindCSS, ECharts, Axios
 - **데이터 저장**: DuckDB (In-Process, CSV 파일 직접 읽기)
 - **세션**: 세션 관리 없음 (페이지 리로드 시 상태 초기화)

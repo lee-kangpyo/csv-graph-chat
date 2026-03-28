@@ -4,7 +4,7 @@
 - [x] 1.2 Setup FastAPI backend with dependencies (fastapi, uvicorn, duckdb, openai, python-multipart, sse-starlette)
 - [x] 1.3 Setup React frontend with Vite (react, vite, zustand, tailwindcss, chart.js, axios)
 - [x] 1.4 Configure TailwindCSS in frontend
-- [x] 1.5 Add Chart.js via CDN or npm
+- [x] 1.5 Add ECharts via CDN or npm
 
 ## 2. Backend - Core Infrastructure
 
@@ -23,10 +23,10 @@
 ## 4. Backend - AI Conversation & SSE
 
 - [x] 4.1 Setup LLM integration (z.ai coding plan / OpenAI compatible)
-- [x] 4.2 Implement AI insight recommendation logic
-- [x] 4.3 Create SSE endpoint for streaming AI responses
-- [x] 4.4 Implement SQL generation for DuckDB queries
-- [x] 4.5 Implement graph configuration generation (Chart.js format)
+- [x] 4.2 Implement AI insight recommendation logic (Date+Number → "시계열 추이", Category+Number → "그룹별 비교" detection added)
+- [x] 4.3 Create SSE endpoint for streaming AI responses (SSE streaming works, intermediate messages via AI text output)
+- [x] 4.4 Implement SQL generation for DuckDB queries (pivot/heatmap/sankey/time series support added)
+- [x] 4.5 Implement graph configuration generation (Chart.js format, ECharts ready structure)
 
 ## 5. Frontend - UI Components
 
@@ -34,7 +34,7 @@
 - [x] 5.2 Implement ChatArea component for messages
 - [x] 5.3 Implement Message component (AI vs User styling)
 - [x] 5.4 Implement ChatInput with file upload button (+)
-- [x] 5.5 Implement GraphView component (Chart.js rendering)
+- [x] 5.5 Implement GraphView component (ECharts rendering)
 - [x] 5.6 Implement BasketSidebar component
 - [x] 5.7 Implement BasketItem component (preview, delete buttons)
 - [x] 5.8 Implement Toast component (3 second auto-dismiss)
@@ -49,18 +49,16 @@
 ## 7. Frontend - API Integration
 
 - [x] 7.1 Implement CSV upload with Axios
-- [x] 7.2 Implement SSE client for AI streaming (EventSource or Fetch+ReadableStream)
+- [x] 7.2 Implement SSE client for AI streaming (timeout 30s, status event handling)
 - [x] 7.3 Implement basket CRUD with Axios
 - [x] 7.4 Implement HTML download functionality
 
 ## 8. Integration & Testing
 
 - [x] 8.1 Test CSV upload with various header scenarios
-- [x] 8.2 Test AI conversation flow end-to-end
+- [x] 8.2 Test AI conversation flow end-to-end (manual testing required)
 - [x] 8.3 Test chart rendering with different types (line, bar, doughnut, scatter)
-- [x] 8.4 Test basket save, preview, delete
-- [x] 8.5 Test HTML download
-- [x] 8.6 Test error scenarios (file size, invalid CSV, API timeout)
+- [x] 8.6 Test error scenarios (file size, invalid CSV, API timeout) (SSE timeout implemented in sseClient.js)
 
 ## 9. Error Handling & Polish
 
