@@ -1,30 +1,22 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const SSE_TIMEOUT_MS = 30000
 
-export const createSSEStream = (message, csvMetadata = null, onMessage, onDone, onError) => {
-  const eventSource = new EventSource(`${API_BASE}/api/chat/stream`)
-  
-  eventSource.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data)
-      if (data.content) {
-        onMessage(data.content)
-      }
-    } catch (err) {
-      console.error('SSE parse error:', err)
+export const createSSEStream = (message, csvMetadata = null, onMessage, onStatus, onDone, onError) => {
+  let timeoutId = null
+  let aborted = false
+
+  const cleanup = () => {
+    if (timeoutId) clearTimeout(timeoutId)
+  }
+
+  timeoutId = setTimeout(() => {
+    if (!aborted) {
+      aborted = true
+      cleanup()
+      onError?.({ type: 'timeout', message: 'AI 응답 시간이 초과되었습니다. 다시 시도해주세요.' })
     }
-  }
-  
-  eventSource.onerror = (err) => {
-    console.error('SSE error:', err)
-    onError?.(err)
-    eventSource.close()
-  }
-  
-  eventSource.addEventListener('done', () => {
-    onDone?.()
-    eventSource.close()
-  })
-  
+  }, SSE_TIMEOUT_MS)
+
   fetch(`${API_BASE}/api/chat/stream`, {
     method: 'POST',
     headers: {
@@ -32,18 +24,69 @@ export const createSSEStream = (message, csvMetadata = null, onMessage, onDone, 
     },
     body: JSON.stringify({ message, csv_metadata: csvMetadata }),
   })
-  
-  return eventSource
-}
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`)
+      }
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
 
-export const sendChatMessage = async (message, csvMetadata = null) => {
-  const response = await fetch(`${API_BASE}/api/chat/stream`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ message, csv_metadata: csvMetadata }),
-  })
-  
-  return response.body
+      const readStream = () => {
+        reader.read().then(({ done, value }) => {
+          if (done || aborted) {
+            cleanup()
+            onDone?.()
+            return
+          }
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            if (line.startsWith('event:')) {
+              const eventType = line.slice(6).trim()
+              continue
+            }
+            if (line.startsWith('data:')) {
+              const dataStr = line.slice(5).trim()
+              try {
+                const data = JSON.parse(dataStr)
+                if (data.content) {
+                  onMessage(data.content)
+                }
+                if (data.status) {
+                  onStatus?.(data.status)
+                }
+              } catch (e) {
+                // ignore parse errors for non-JSON data
+              }
+            }
+          }
+
+          readStream()
+        }).catch(err => {
+          cleanup()
+          if (!aborted) {
+            onError?.(err)
+          }
+        })
+      }
+
+      readStream()
+    })
+    .catch(err => {
+      cleanup()
+      if (!aborted) {
+        onError?.(err)
+      }
+    })
+
+  return {
+    abort: () => {
+      aborted = true
+      cleanup()
+    }
+  }
 }

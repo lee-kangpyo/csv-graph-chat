@@ -1,23 +1,28 @@
 import { useEffect, useRef } from 'react'
-import { Chart } from 'chart.js/auto'
+import * as echarts from 'echarts'
 
 function GraphView({ config }) {
-  const canvasRef = useRef(null)
+  const containerRef = useRef(null)
   const chartRef = useRef(null)
 
   useEffect(() => {
-    if (!canvasRef.current || !config) return
+    if (!containerRef.current || !config) return
 
     if (chartRef.current) {
-      chartRef.current.destroy()
+      chartRef.current.dispose()
     }
 
-    chartRef.current = new Chart(canvasRef.current, config)
+    chartRef.current = echarts.init(containerRef.current)
+    chartRef.current.setOption(config)
+
+    const handleResize = () => {
+      chartRef.current?.resize()
+    }
+    window.addEventListener('resize', handleResize)
 
     return () => {
-      if (chartRef.current) {
-        chartRef.current.destroy()
-      }
+      window.removeEventListener('resize', handleResize)
+      chartRef.current?.dispose()
     }
   }, [config])
 
@@ -25,7 +30,7 @@ function GraphView({ config }) {
 
   return (
     <div className="p-4">
-      <canvas ref={canvasRef}></canvas>
+      <div ref={containerRef} style={{ width: '100%', height: '400px' }}></div>
     </div>
   )
 }
