@@ -1,6 +1,9 @@
 import { useState, useRef } from 'react'
 import { uploadCSV } from '../api/csvApi'
 import useCSVStore from '../stores/csvStore'
+import useChatStore from '../stores/chatStore'
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 function ChatInput({ onShowToast, onGraphGenerated }) {
   const [input, setInput] = useState('')
@@ -8,6 +11,8 @@ function ChatInput({ onShowToast, onGraphGenerated }) {
   const [sending, setSending] = useState(false)
   const fileInputRef = useRef(null)
   const setCSVData = useCSVStore((state) => state.setCSVData)
+  const addMessage = useChatStore((state) => state.addMessage)
+  const setLoading = useChatStore((state) => state.setLoading)
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0]
@@ -44,14 +49,48 @@ function ChatInput({ onShowToast, onGraphGenerated }) {
     e.preventDefault()
     if (!input.trim() || sending) return
     
+    const userMessage = input.trim()
+    setInput('')
     setSending(true)
+    setLoading(true)
+    
+    addMessage('user', userMessage)
+    addMessage('ai', '...')
+    
     try {
-      // TODO: Implement chat API call
-      onShowToast('Chat feature coming soon', 'info')
+      const csvData = useCSVStore.getState()
+      const response = await fetch(`${API_BASE}/api/chat/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: userMessage,
+          csv_metadata: csvData.fileId ? {
+            file_id: csvData.fileId,
+            columns: csvData.columns,
+            row_count: csvData.rowCount
+          } : null
+        }),
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to get response')
+      }
+      
+      const data = await response.json()
+      
+      useChatStore.setState((state) => {
+        const messages = [...state.messages]
+        const lastMessage = messages[messages.length - 1]
+        if (lastMessage && lastMessage.role === 'ai') {
+          messages[messages.length - 1] = { ...lastMessage, content: data.content || 'No response' }
+        }
+        return { messages }
+      })
     } catch (err) {
-      onShowToast(err.message, 'error')
+      onShowToast(err.message || 'Chat failed', 'error')
     } finally {
       setSending(false)
+      setLoading(false)
     }
   }
 

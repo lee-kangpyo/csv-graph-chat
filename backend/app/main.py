@@ -1,5 +1,8 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+load_dotenv()
 
 from .api.basket import router as basket_router
 from .api.upload import router as upload_router

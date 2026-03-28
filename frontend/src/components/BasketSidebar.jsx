@@ -13,7 +13,7 @@ function BasketSidebar({ onShowToast }) {
   const fetchBaskets = async () => {
     try {
       const response = await axios.get('/api/basket/')
-      setItems(response.data)
+      setItems(Array.isArray(response.data) ? response.data : [])
     } catch (err) {
       console.error('Failed to fetch baskets:', err)
     }

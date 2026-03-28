@@ -1,13 +1,24 @@
 function Toast({ message, type = 'error' }) {
   const bgColor = type === 'error' 
-    ? 'bg-red-500' 
+    ? '#ef4444' 
     : type === 'success' 
-      ? 'bg-green-500' 
-      : 'bg-gray-700'
+      ? '#22c55e' 
+      : '#374151'
 
   return (
-    <div className={`fixed bottom-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in`}>
-      <p className="text-sm font-medium">{message}</p>
+    <div style={{ 
+      backgroundColor: bgColor, 
+      color: 'white',
+      position: 'fixed', 
+      bottom: '1rem', 
+      right: '1rem',
+      padding: '0.75rem 1.5rem',
+      borderRadius: '0.5rem',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+      zIndex: 50,
+      animation: 'fadeIn 0.3s ease-in-out'
+    }}>
+      <p style={{ fontSize: '0.875rem', fontWeight: 500, margin: 0 }}>{message}</p>
     </div>
   )
 }
