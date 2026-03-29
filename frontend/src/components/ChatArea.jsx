@@ -22,6 +22,14 @@ function ChatArea({ currentGraph, onGraphGenerated, onShowToast }) {
   return (
     <div className="flex-1 overflow-y-auto p-4">
       <div className="max-w-3xl mx-auto">
+        <div className="flex justify-end mb-2">
+          <button
+            onClick={() => window.location.href = '?test=1'}
+            className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+          >
+            차트 테스트
+          </button>
+        </div>
         {showEmptyState && !csvData && (
           <div className="text-center text-gray-500 dark:text-gray-400 mt-8">
             <p className="text-lg mb-2">Upload a CSV file to get started</p>
