@@ -5,6 +5,7 @@ import axios from 'axios'
 function BasketSidebar({ onShowToast }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     fetchBaskets()
@@ -14,8 +15,10 @@ function BasketSidebar({ onShowToast }) {
     try {
       const response = await axios.get('/api/basket/')
       setItems(Array.isArray(response.data) ? response.data : [])
+      setError(null)
     } catch (err) {
       console.error('Failed to fetch baskets:', err)
+      setError('백엔드 서버가 실행되지 않았습니다. backend 폴더에서 "uvicorn main:app --reload"를 실행해주세요.')
     }
   }
 
@@ -89,7 +92,12 @@ function BasketSidebar({ onShowToast }) {
       </div>
       
       <div className="flex-1 overflow-y-auto p-2">
-        {items.length === 0 ? (
+        {error ? (
+          <div className="text-center text-red-500 p-4">
+            <p className="text-sm mb-2 font-medium">⚠️ 연결 오류</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">{error}</p>
+          </div>
+        ) : items.length === 0 ? (
           <div className="text-center text-gray-500 p-4">
             <p className="text-sm mb-2">Your basket is empty</p>
             <p className="text-xs">Save graphs from chat to see them here</p>

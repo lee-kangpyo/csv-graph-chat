@@ -86,6 +86,10 @@ function ChatInput({ onShowToast, onGraphGenerated }) {
         }
         return { messages }
       })
+
+      if (data.graph && typeof data.graph === 'object') {
+        onGraphGenerated?.(data.graph)
+      }
     } catch (err) {
       onShowToast(err.message || 'Chat failed', 'error')
     } finally {

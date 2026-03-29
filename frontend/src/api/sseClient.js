@@ -1,7 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const SSE_TIMEOUT_MS = 30000
 
-export const createSSEStream = (message, csvMetadata = null, onMessage, onStatus, onDone, onError) => {
+export const createSSEStream = (message, csvMetadata = null, onMessage, onStatus, onDone, onError, onGraph) => {
   let timeoutId = null
   let aborted = false
 
@@ -55,6 +55,9 @@ export const createSSEStream = (message, csvMetadata = null, onMessage, onStatus
                 const data = JSON.parse(dataStr)
                 if (data.content) {
                   onMessage(data.content)
+                }
+                if (data.graph && typeof data.graph === 'object') {
+                  onGraph?.(data.graph)
                 }
                 if (data.status) {
                   onStatus?.(data.status)

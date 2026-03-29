@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: AI가 생성한 ECharts 설정 수락
 시스템은 AI가 생성한 ECharts 설정 객체를 받아들여야 MUST 한다.

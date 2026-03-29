@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+ECharts 기반 다양한 차트 타입 렌더링, 실시간 업데이트, 반응형 크기 조정, AI 생성 차트 설정 수락 및 HTML 다운로드 기능을 제공하는 시각화 시스템
+
+## Requirements
 
 ### Requirement: ECharts 렌더링
 시스템은 CDN에서 로드된 ECharts 라이브러리를 사용하여 차트를 렌더링해야 한다.
@@ -50,15 +53,23 @@
 - **AND** 종횡비를 유지해야 한다
 
 ### Requirement: AI가 생성한 ECharts 설정 수락
-시스템은 AI가 생성한 ECharts 설정 객체를 받아들여야 MUST 한다.
+시스템은 AI가 생성한 ECharts 설정 객체를 받아들여야 한다.
 
 #### Scenario: 완전한 ECharts 설정 수락
-- **WHEN** AI가 { series: [{ type, data, ... }], xAxis, yAxis, ... }形式的 설정을 보내면
-- **THEN** 시스템은 이를 echarts.init(dom).setOption(config)로 직접 전달해야 한다
+- **WHEN** AI가 `{ series: [{ type, data, ... }], xAxis, yAxis, ... }` 형식의 설정을 보내면
+- **THEN** 시스템은 이를 `echarts.init(dom).setOption(config)`로 직접 전달해야 한다
 
 #### Scenario: 옵션 누락 시
 - **WHEN** AI가 옵션 없이 설정을 보내면
 - **THEN** 시스템은 반응형과 툴팁을 위한 기본 옵션을 적용해야 한다
+
+#### Scenario: 백엔드 API 응답에서 차트 설정 수락
+- **WHEN** 백엔드 API가 `{"content": "...", "graph": {...}}` 형식의 응답을 반환하면
+- **THEN** 프론트엔드는 `graph` 필드를 추출하여 차트로 렌더링해야 한다
+
+#### Scenario: SSE 스트림에서 차트 설정 수락
+- **WHEN** SSE 스트림 이벤트가 `{"content": "...", "graph": {...}}` 형식의 데이터를 포함하면
+- **THEN** 프론트엔드는 실시간으로 차트를 업데이트해야 한다
 
 ### Requirement: HTML로 차트 다운로드
 시스템은 차트를 독립형 HTML 파일로 내보낼 수 있어야 한다.

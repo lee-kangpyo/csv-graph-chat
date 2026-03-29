@@ -6,7 +6,7 @@ function GraphView({ config }) {
   const chartRef = useRef(null)
 
   useEffect(() => {
-    if (!containerRef.current || !config) return
+    if (!containerRef.current || !config || typeof config !== 'object' || Array.isArray(config)) return
 
     if (chartRef.current) {
       chartRef.current.dispose()

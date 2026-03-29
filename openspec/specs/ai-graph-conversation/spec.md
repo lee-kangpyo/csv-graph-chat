@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+AI와 실시간 대화를 통해 CSV 데이터를 분석하고, 인사이트를 추천하며, 자연어로 그래프를 생성/수정하는 대화형 분석 시스템
+
+## Requirements
 
 ### Requirement: AI 인사이트 추천
 CSV 데이터를 분석한 후, 시스템은 AI가 사용자에게 원하는 인사이트를 물어봐야 한다.
