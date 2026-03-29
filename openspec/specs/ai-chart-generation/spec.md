@@ -15,6 +15,11 @@ AI 대화 응답에 ECharts 차트 설정을 포함하여 프론트엔드에서 
 - **WHEN** `/api/chat/stream` SSE 엔드포인트가 응답할 때
 - **THEN** 각 `message` 이벤트의 데이터는 `{"content": string, "graph": object | null}` 형식을 포함할 수 있다
 
+#### Scenario: 실제 데이터 기반 차트 생성
+- **WHEN** 백엔드가 차트 생성 요청을 처리할 때
+- **THEN** 시스템은 더미 데이터가 아닌 pandas로 처리한 실제 CSV 데이터를 chart config에 사용해야 한다
+- **AND** LLM이 결정한 분석 intent(group_by, time_series 등)를 기반으로 데이터를 처리해야 한다
+
 ### Requirement: 프론트엔드 차트 상태 업데이트
 프론트엔드는 API 응답에서 차트 설정을 추출하여 렌더링해야 한다.
 

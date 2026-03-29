@@ -61,21 +61,6 @@ CSV 데이터를 분석한 후, 시스템은 AI가 사용자에게 원하는 인
 - **THEN** 시스템은 토스트 에러 "AI 응답 시간이 초과되었습니다. 다시 시도해주세요"를 표시해야 한다
 - **AND** 사용자가 재시도할 수 있도록 해야 한다
 
-### Requirement: DuckDB용 SQL 생성
-시스템은 CSV 데이터를 분석하기 위해 DuckDB가 실행할 수 있는 SQL 쿼리를 생성해야 한다.
-
-#### Scenario: GROUP BY 쿼리 생성
-- **WHEN** 사용자가 "지역별 매출"이라고 요청하면
-- **THEN** AI는 SQL을 생성해야 한다: `SELECT region, SUM(sales) FROM 'data.csv' GROUP BY region`
-
-#### Scenario: 시계열 쿼리 생성
-- **WHEN** 사용자가 "월별 추이"라고 요청하면
-- **THEN** AI는 감지된 날짜 컬럼 기반의 날짜 그룹화 SQL을 생성해야 한다
-
-#### Scenario: 복잡한 집계를 위한 쿼리 생성
-- **WHEN** 사용자가 "지역별 월별 매출 히트맵"이라고 요청하면
-- **THEN** AI는 적절한 피벗 스타일 SQL 쿼리를 생성해야 한다
-
 ### Requirement: 그래프 설정 출력
 시스템은 ECharts가 렌더링할 수 있는 형식으로 그래프 설정을 출력해야 한다.
 
