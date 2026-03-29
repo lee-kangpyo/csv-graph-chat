@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react'
 import { uploadCSV } from '../api/csvApi'
+import { createBasket } from '../api/basketApi'
 import useCSVStore from '../stores/csvStore'
 import useChatStore from '../stores/chatStore'
+import useBasketStore from '../stores/basketStore'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-function ChatInput({ onShowToast, onGraphGenerated }) {
+function ChatInput({ onShowToast }) {
   const [input, setInput] = useState('')
   const [uploading, setUploading] = useState(false)
   const [sending, setSending] = useState(false)
@@ -13,6 +15,28 @@ function ChatInput({ onShowToast, onGraphGenerated }) {
   const setCSVData = useCSVStore((state) => state.setCSVData)
   const addMessage = useChatStore((state) => state.addMessage)
   const setLoading = useChatStore((state) => state.setLoading)
+  const addItem = useBasketStore((state) => state.addItem)
+  const removeItem = useBasketStore((state) => state.removeItem)
+
+  const generateGraphName = (question) => {
+    if (!question || question.trim() === '') {
+      return `Graph ${Date.now()}`
+    }
+
+    let name = question.trim()
+
+    name = name.replace(/[^\w\s-]/g, '')
+
+    if (name.length > 50) {
+      name = name.substring(0, 47) + '...'
+    }
+
+    if (!name || name.trim() === '') {
+      return `Graph ${Date.now()}`
+    }
+
+    return name
+  }
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0]
@@ -77,7 +101,7 @@ function ChatInput({ onShowToast, onGraphGenerated }) {
       }
       
       const data = await response.json()
-      
+
       useChatStore.setState((state) => {
         const messages = [...state.messages]
         const lastMessage = messages[messages.length - 1]
@@ -88,7 +112,30 @@ function ChatInput({ onShowToast, onGraphGenerated }) {
       })
 
       if (data.graph && typeof data.graph === 'object') {
-        onGraphGenerated?.(data.graph)
+        const graphName = generateGraphName(userMessage)
+
+        const tempId = `temp-${Date.now()}`
+        addItem({
+          id: tempId,
+          name: graphName,
+          graph_config: data.graph,
+          question: userMessage
+        })
+
+        createBasket(graphName, data.graph, userMessage)
+          .then((response) => {
+            removeItem(tempId)
+            addItem({
+              id: response.id,
+              name: response.name,
+              graph_config: response.graph_config,
+              question: userMessage
+            })
+          })
+          .catch((err) => {
+            removeItem(tempId)
+            onShowToast('Failed to save graph to Basket', 'error')
+          })
       }
     } catch (err) {
       onShowToast(err.message || 'Chat failed', 'error')

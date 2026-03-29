@@ -3,7 +3,7 @@ import Message from './Message'
 import useChatStore from '../stores/chatStore'
 import useCSVStore from '../stores/csvStore'
 
-function ChatArea({ currentGraph, onGraphGenerated, onShowToast }) {
+function ChatArea({ onShowToast }) {
   const messagesEndRef = useRef(null)
   const messages = useChatStore((state) => state.messages)
   const isLoading = useChatStore((state) => state.isLoading)

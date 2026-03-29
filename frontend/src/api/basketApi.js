@@ -5,10 +5,11 @@ export const getBaskets = async () => {
   return response.data
 }
 
-export const createBasket = async (name, graphConfig) => {
+export const createBasket = async (name, graphConfig, question = '') => {
   const response = await api.post('/api/basket/', {
     name,
     graph_config: graphConfig,
+    question,
   })
   return response.data
 }

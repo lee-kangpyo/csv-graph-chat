@@ -7,19 +7,10 @@ from ..db.basket_db import create_basket, get_basket, get_all_baskets, delete_ba
 router = APIRouter(prefix="/api/basket", tags=["basket"])
 
 
-class GraphConfigModel(BaseModel):
-    type: str
-    title: str | None = None
-    x_axis: str
-    y_axis: str
-    labels: list[str] = []
-    datasets: list[dict] = []
-    style: dict = {}
-
-
 class CreateBasketRequest(BaseModel):
     name: str
-    graph_config: GraphConfigModel
+    graph_config: dict
+    question: str = ''
 
 
 class BasketResponse(BaseModel):
@@ -27,12 +18,13 @@ class BasketResponse(BaseModel):
     name: str
     graph_config: dict
     created_at: str
+    question: str = ''
 
 
 @router.post("/", response_model=BasketResponse)
 async def create(request: CreateBasketRequest):
     basket_id = str(uuid.uuid4())
-    basket = create_basket(basket_id, request.name, request.graph_config.model_dump())
+    basket = create_basket(basket_id, request.name, request.graph_config, request.question)
     return basket
 
 

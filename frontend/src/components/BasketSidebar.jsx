@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import BasketItem from './BasketItem'
 import axios from 'axios'
+import useBasketStore from '../stores/basketStore'
 
-function BasketSidebar({ onShowToast }) {
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+function BasketSidebar({ onShowToast, onGraphClick }) {
+  const { items, setItems, removeItem } = useBasketStore()
+  const error = null
 
   useEffect(() => {
     fetchBaskets()
@@ -15,26 +15,25 @@ function BasketSidebar({ onShowToast }) {
     try {
       const response = await axios.get('/api/basket/')
       setItems(Array.isArray(response.data) ? response.data : [])
-      setError(null)
     } catch (err) {
       console.error('Failed to fetch baskets:', err)
-      setError('백엔드 서버가 실행되지 않았습니다. backend 폴더에서 "uvicorn main:app --reload"를 실행해주세요.')
+      onShowToast?.('Failed to load baskets', 'error')
     }
   }
 
   const handleDelete = async (id) => {
     try {
       await axios.delete(`/api/basket/${id}`)
-      setItems(items.filter(item => item.id !== id))
-      onShowToast('Graph deleted from basket', 'success')
+      removeItem(id)
+      onShowToast?.('Graph deleted from basket', 'success')
     } catch (err) {
-      onShowToast('Failed to delete graph', 'error')
+      onShowToast?.('Failed to delete graph', 'error')
     }
   }
 
   const handleDownload = async () => {
     if (items.length === 0) {
-      onShowToast('No graphs to download', 'error')
+      onShowToast?.('No graphs to download', 'error')
       return
     }
 
@@ -47,9 +46,9 @@ function BasketSidebar({ onShowToast }) {
       a.download = 'graphs.html'
       a.click()
       URL.revokeObjectURL(url)
-      onShowToast('Download started', 'success')
+      onShowToast?.('Download started', 'success')
     } catch (err) {
-      onShowToast('Failed to download', 'error')
+      onShowToast?.('Failed to download', 'error')
     }
   }
 
@@ -108,6 +107,7 @@ function BasketSidebar({ onShowToast }) {
               key={item.id}
               item={item}
               onDelete={handleDelete}
+              onGraphClick={onGraphClick}
             />
           ))
         )}

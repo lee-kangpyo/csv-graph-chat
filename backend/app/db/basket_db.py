@@ -21,20 +21,25 @@ def init_db():
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             graph_config TEXT NOT NULL,
-            created_at TEXT NOT NULL
+            created_at TEXT NOT NULL,
+            question TEXT DEFAULT ''
         )
     """)
-    conn.commit()
+    cursor.execute("PRAGMA table_info(baskets)")
+    columns = [column[1] for column in cursor.fetchall()]
+    if 'question' not in columns:
+        cursor.execute("ALTER TABLE baskets ADD COLUMN question TEXT DEFAULT ''")
+        conn.commit()
     conn.close()
 
 
-def create_basket(basket_id: str, name: str, graph_config: dict) -> dict:
+def create_basket(basket_id: str, name: str, graph_config: dict, question: str = '') -> dict:
     conn = get_db_connection()
     cursor = conn.cursor()
     created_at = datetime.now().isoformat()
     cursor.execute(
-        "INSERT INTO baskets (id, name, graph_config, created_at) VALUES (?, ?, ?, ?)",
-        (basket_id, name, json.dumps(graph_config), created_at),
+        "INSERT INTO baskets (id, name, graph_config, created_at, question) VALUES (?, ?, ?, ?, ?)",
+        (basket_id, name, json.dumps(graph_config), created_at, question),
     )
     conn.commit()
     conn.close()
@@ -43,6 +48,7 @@ def create_basket(basket_id: str, name: str, graph_config: dict) -> dict:
         "name": name,
         "graph_config": graph_config,
         "created_at": created_at,
+        "question": question,
     }
 
 
@@ -58,6 +64,7 @@ def get_basket(basket_id: str) -> Optional[dict]:
             "name": row["name"],
             "graph_config": json.loads(row["graph_config"]),
             "created_at": row["created_at"],
+            "question": row["question"],
         }
     return None
 
@@ -74,6 +81,7 @@ def get_all_baskets() -> list[dict]:
             "name": row["name"],
             "graph_config": json.loads(row["graph_config"]),
             "created_at": row["created_at"],
+            "question": row["question"],
         }
         for row in rows
     ]
