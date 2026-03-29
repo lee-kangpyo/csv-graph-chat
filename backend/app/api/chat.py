@@ -16,7 +16,7 @@ from ..api.insight_recommendation import (
     parse_analysis_intent,
     get_fallback_intent,
 )
-from ..api.graph_config import generate_chart_config
+from ..api.graph_config import generate_chart_config_from_result
 from ..api.pandas_processor import load_csv_data, process_analysis_intent
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
@@ -94,14 +94,7 @@ def generate_chart_from_file(message: str, csv_metadata: dict) -> Optional[dict]
             return None
 
         logger.info("[CHART] chart config 생성 완료")
-        return generate_chart_config(
-            chart_type=result["chart_type"],
-            labels=result["labels"],
-            series_data=result["values"],
-            title=result.get("title"),
-            x_axis_label=result.get("x_axis_label"),
-            y_axis_label=result.get("y_axis_label"),
-        )
+        return generate_chart_config_from_result(result)
 
     except Exception as e:
         logger.error(f"[CHART] 예외 발생: {e}")

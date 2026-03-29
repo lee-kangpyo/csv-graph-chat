@@ -28,9 +28,13 @@ function GraphView({ config }) {
 
   if (!config) return null
 
+  const chartType = config?.series?.[0]?.type || (config?.radar ? 'radar' : 'default')
+  const isLargeChart = ['sankey', 'heatmap', 'radar', 'sunburst', 'boxplot'].includes(chartType)
+  const chartHeight = isLargeChart ? '600px' : '400px'
+
   return (
     <div className="p-4">
-      <div ref={containerRef} style={{ width: '100%', height: '400px' }}></div>
+      <div ref={containerRef} style={{ width: '100%', height: chartHeight }}></div>
     </div>
   )
 }
