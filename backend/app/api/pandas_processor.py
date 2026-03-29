@@ -87,11 +87,128 @@ def validate_processing_result(labels: list, values: list) -> bool:
     return True
 
 
+def process_advanced_chart(df: pd.DataFrame, intent: dict) -> Optional[dict]:
+    chart_type = intent.get("chart_type", "bar").lower()
+    x_col = intent.get("x_col")
+    y_col = intent.get("y_col")
+    cat_col = intent.get("category_col")
+    val_col = intent.get("value_col")
+    agg_func = intent.get("agg_func", "mean") or "mean"
+
+    result_data = {}
+
+    try:
+        if chart_type in ["scatter", "scatter_visualmap"]:
+            if x_col in df.columns and y_col in df.columns:
+                cols_to_extract = [x_col, y_col]
+                if cat_col and cat_col in df.columns:
+                    cols_to_extract.append(cat_col)
+                df_clean = df[cols_to_extract].dropna()
+                result_data["scatter_data"] = df_clean.values.tolist()
+                result_data["columns"] = cols_to_extract
+            else:
+                return None
+                
+        elif chart_type == "heatmap":
+            if x_col in df.columns and y_col in df.columns and val_col in df.columns:
+                grouped = df.groupby([x_col, y_col])[val_col].agg(agg_func).reset_index()
+                x_labels = sorted(df[x_col].dropna().unique().tolist())
+                y_labels = sorted(df[y_col].dropna().unique().tolist())
+                
+                heatmap_data = []
+                for _, row in grouped.iterrows():
+                    try:
+                        x_idx = x_labels.index(row[x_col])
+                        y_idx = y_labels.index(row[y_col])
+                        heatmap_data.append([x_idx, y_idx, row[val_col]])
+                    except ValueError:
+                        continue
+                        
+                result_data["labels"] = x_labels
+                result_data["y_labels"] = y_labels
+                result_data["heatmap_data"] = heatmap_data
+            else:
+                return None
+                
+        elif chart_type == "sankey":
+            if x_col in df.columns and y_col in df.columns:
+                if val_col and val_col in df.columns:
+                    grouped = df.groupby([x_col, y_col])[val_col].agg(agg_func).reset_index()
+                else:
+                    grouped = df.groupby([x_col, y_col]).size().reset_index(name='count')
+                    val_col = 'count'
+                
+                links = []
+                nodes_set = set()
+                for _, row in grouped.iterrows():
+                    src = str(row[x_col])
+                    tgt = str(row[y_col])
+                    val = float(row[val_col])
+                    links.append({"source": src, "target": tgt, "value": val})
+                    nodes_set.add(src)
+                    nodes_set.add(tgt)
+                
+                result_data["nodes"] = [{"name": n} for n in nodes_set]
+                result_data["links"] = links
+            else:
+                return None
+                
+        elif chart_type == "boxplot":
+            if x_col in df.columns and y_col in df.columns:
+                df_clean = df[[x_col, y_col]].dropna()
+                grouped = df_clean.groupby(x_col)[y_col]
+                categories = []
+                box_data = []
+                for name, group in grouped:
+                    categories.append(str(name))
+                    box_data.append(group.tolist())
+                result_data["labels"] = categories
+                result_data["box_data"] = box_data
+            else:
+                return None
+                
+        elif chart_type in ["stacked_bar", "dual_axis", "radar"]:
+            # Needs cross tabulation or pivot
+            if x_col in df.columns and val_col in df.columns and cat_col in df.columns:
+                pivot = df.pivot_table(index=x_col, columns=cat_col, values=val_col, aggfunc=agg_func, fill_value=0)
+                result_data["labels"] = pivot.index.astype(str).tolist()
+                series_dict = {}
+                for col in pivot.columns:
+                    series_dict[str(col)] = pivot[col].tolist()
+                result_data["series_dict"] = series_dict
+                result_data["legend"] = list(series_dict.keys())
+            else:
+                return None
+                
+        else:
+            # Fallback simple grouping for bar, line, pie
+            if x_col and val_col and x_col in df.columns and val_col in df.columns:
+                grouped = df.groupby(x_col)[val_col].agg(agg_func)
+                result_data["labels"] = grouped.index.astype(str).tolist()
+                result_data["values"] = grouped.values.tolist()
+                if not validate_processing_result(result_data["labels"], result_data["values"]):
+                    return None
+            else:
+                return None
+
+        result_data["chart_type"] = chart_type
+        result_data["title"] = intent.get("title", f"{x_col or '카테고리'}별 {val_col or '분석'}")
+        result_data["x_axis_label"] = x_col
+        result_data["y_axis_label"] = y_col or val_col
+
+        return result_data
+    except Exception as e:
+        print(f"Error process_advanced_chart: {e}")
+        return None
+
+
 def process_analysis_intent(df: pd.DataFrame, intent: dict) -> Optional[dict]:
     """분석 intent를 기반으로 데이터 처리를 수행합니다."""
     analysis_type = intent.get("analysis_type")
 
-    if analysis_type == "group_by":
+    if analysis_type == "advanced_chart":
+        return process_advanced_chart(df, intent)
+    elif analysis_type == "group_by":
         labels, values = process_group_by(
             df,
             group_by=intent.get("group_by", ""),
@@ -106,7 +223,7 @@ def process_analysis_intent(df: pd.DataFrame, intent: dict) -> Optional[dict]:
             freq=intent.get("freq", "monthly"),
         )
     else:
-        return None
+        return process_advanced_chart(df, intent)
 
     if not validate_processing_result(labels, values):
         return None
@@ -115,7 +232,7 @@ def process_analysis_intent(df: pd.DataFrame, intent: dict) -> Optional[dict]:
         "labels": labels,
         "values": values,
         "chart_type": intent.get("chart_type", "bar"),
-        "title": intent.get("title", f"{intent.get('value', 'Data')} by {intent.get('group_by', intent.get('time_col', 'Category'))}"),
+        "title": intent.get("title", f"{intent.get('group_by', intent.get('time_col', '카테고리'))}별 {intent.get('value', '데이터')}"),
         "x_axis_label": intent.get("group_by") or intent.get("time_col"),
         "y_axis_label": intent.get("value", ""),
     }

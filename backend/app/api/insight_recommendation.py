@@ -42,28 +42,18 @@ def generate_insight_prompt(
 The user wants to understand their data and generate insights."""
 
     if not user_question:
-        if type_combos["has_date_and_number"]:
-            base_prompt += """
+        base_prompt += """
 
-Based on the data structure (Date + Number columns detected), you SHOULD recommend:
-- "시계열 추이" (Time Series Trend): Show trends over time with line charts
-  - Offer options: monthly comparison, quarterly comparison, yearly comparison
-- Example questions to ask: "월별 매출 추이를 보고 싶으신가요?" or "분기별 트렌드는 어떠세요?"
+Based on the data structure detected (dates, numbers, or categories), you SHOULD creatively recommend combinations of the following Advanced Chart Insights:
+- "분포 및 이상치 분석" (Distribution/Boxplot): Check for risk signals and data spreads.
+- "흐름 및 이탈 경로 추적" (Flow/Sankey): Track transitions from a source state to a target state.
+- "상관관계 분석" (Correlation/Scatter): Find causal relationships between two numeric columns.
+- "밀집도 분석" (Density/Heatmap): Find bottlenecks using two categorical dimensions.
+- "혼합 지표 분석" (Dual Axis): Compare cumulative totals alongside percentage rates.
+- "시계열 추이" (Time Series Trend/Line): Show trends over time.
+- "그룹별 다이내믹 비교" (Group Comparison/Bar/Pie/Radar): Rank values or compare multi-dimensional scores.
 
-If the user asks about trends, use time-based grouping (daily/weekly/monthly/quarterly/yearly)."""
-        elif type_combos["has_category_and_number"]:
-            base_prompt += """
-
-Based on the data structure (Category + Number columns detected), you SHOULD recommend:
-- "그룹별 비교" (Group Comparison): Compare values across categories using bar/pie charts
-  - Offer options: horizontal bar for ranking, pie chart for proportion
-- Example questions to ask: "지역별 매출 비교를 보고 싶으신가요?" or "어떤 카테고리가 가장 큰 비중인가요?"
-
-If the user asks about comparisons, use GROUP BY for aggregation."""
-        else:
-            base_prompt += """
-
-Ask the user what kind of insights they want, or suggest 2-3 potential analyses based on the data types detected."""
+Suggest 2-3 specific, actionable analysis questions (e.g. "어느 단과대학에서 학사경고 후 제적되는 흐름이 가장 많은지 산키 다이어그램으로 볼까요?") based on the actual columns provided."""
     else:
         base_prompt += f"""
 
@@ -92,7 +82,7 @@ def generate_chart_prompt(
     for i, row in enumerate(sample_data[:10]):
         sample_rows += f"  {i+1}. {row}\n"
 
-    prompt = f"""You are a data analyst. Look at the sample data below and determine how to visualize it.
+    prompt = f"""You are an advanced data analyst AI. Look at the sample data below and determine the best chart visualization strategy to answer the user request.
 
 CSV columns ({row_count} rows total):
 {chr(10).join(column_info)}
@@ -101,18 +91,38 @@ Sample data (first 10 rows):
 {sample_rows}
 User request: "{user_request}"
 
-YOUR TASK: Identify the best group_by or time_series analysis for this request.
+YOUR TASK: Translate the user's request into a single visualization Intent JSON based on 11 available chart types.
 
-Rules:
-- Look at the actual sample values to understand each column's type (number, category, date)
-- Pick the most meaningful category/group column for group_by
-- Pick the most meaningful numeric column to aggregate
+Available Chart Types (`chart_type`):
+1. "bar" (group comparisons)
+2. "line" (time series/trends)
+3. "scatter" (correlations between 2 numerics)
+4. "stacked_bar" (component parts across categories)
+5. "pie" (proportions)
+6. "boxplot" (distributions/outliers)
+7. "heatmap" (density across 2 categories)
+8. "sankey" (flow/transitions from source to target)
+9. "dual_axis" (mixed metrics like bar+line)
+10. "scatter_visualmap" (clustering/scatter with boundary colors)
+11. "radar" (multi-dimensional assessment)
+
+Rules for the JSON Output Structure:
+- You MUST use ONLY this unified schema:
+  {{"analysis_type": "advanced_chart", "chart_type": "...", "x_col": "...", "y_col": "...", "category_col": "...", "value_col": "...", "agg_func": "sum/count/mean", "title": "..."}}
+- Only use keys: `chart_type`, `x_col`, `y_col`, `category_col`, `value_col`, `agg_func`, `title`.
+- Leave fields empty/null if they are not needed for the specific `chart_type`.
+- `x_col` is usually the primary axis or category (e.g., date, dept). For Sankey, it's the `source`.
+- `y_col` is usually the secondary axis or target category. For Sankey, it's the `target`.
+- `value_col` is the numeric column to be aggregated.
+- `agg_func` is one of "sum", "count", "mean", "max", "min".
+- Pick the most meaningful columns based on the sample data.
+- title MUST be in Korean (한글). Do NOT use English titles.
 
 You MUST output ONLY a single JSON object. No explanation. No markdown. No extra text.
 
 Example outputs:
-{{"analysis_type": "group_by", "group_by": "학과", "value": "평점", "agg_func": "mean", "chart_type": "bar", "title": "학과별 평균 평점"}}
-{{"analysis_type": "time_series", "time_col": "날짜", "value": "매출", "freq": "monthly", "chart_type": "line", "title": "월별 매출 추이"}}
+{{"analysis_type": "advanced_chart", "chart_type": "scatter", "x_col": "study_hours", "y_col": "test_score", "category_col": "class", "value_col": null, "agg_func": null, "title": "공부 시간 vs 시험 점수"}}
+{{"analysis_type": "advanced_chart", "chart_type": "sankey", "x_col": "college", "y_col": "status", "category_col": null, "value_col": "student_id", "agg_func": "count", "title": "학생 흐름 및 중도탈락"}}
 
 Output the JSON now:"""
 
@@ -218,10 +228,12 @@ def get_fallback_intent(
     group_col = category_columns[0] if category_columns else (columns[0]["name"] if columns else "")
 
     return {
-        "analysis_type": "group_by",
-        "group_by": group_col,
-        "value": number_columns[0],
-        "agg_func": "mean",
+        "analysis_type": "advanced_chart",
         "chart_type": chart_type,
-        "title": f"{number_columns[0]} by {group_col}",
+        "x_col": group_col,
+        "y_col": None,
+        "category_col": None,
+        "value_col": number_columns[0],
+        "agg_func": "mean",
+        "title": f"{group_col}별 {number_columns[0]}",
     }
