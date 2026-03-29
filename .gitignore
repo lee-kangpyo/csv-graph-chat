@@ -69,3 +69,7 @@ htmlcov/
 
 # OpenSpec
 .openspec/
+
+# Agent tools
+.agent/
+temp-proposal.txt
