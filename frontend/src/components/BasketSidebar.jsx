@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import BasketItem from './BasketItem'
 import axios from 'axios'
 import useBasketStore from '../stores/basketStore'
+import { downloadHTML } from '../utils/htmlDownload'
 
 function BasketSidebar({ onShowToast, onGraphClick }) {
   const { items, setItems, removeItem } = useBasketStore()
@@ -38,49 +39,11 @@ function BasketSidebar({ onShowToast, onGraphClick }) {
     }
 
     try {
-      const htmlContent = generateHTMLDownload(items)
-      const blob = new Blob([htmlContent], { type: 'text/html' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'graphs.html'
-      a.click()
-      URL.revokeObjectURL(url)
+      downloadHTML(items)
       onShowToast?.('Download started', 'success')
     } catch (err) {
       onShowToast?.('Failed to download', 'error')
     }
-  }
-
-  const generateHTMLDownload = (graphs) => {
-    const chartsHTML = graphs.map((graph, idx) => `
-      <div class="chart-container">
-        <h3>${graph.name}</h3>
-        <canvas id="chart${idx}"></canvas>
-        <script>
-          new Chart(document.getElementById('chart${idx}'), ${JSON.stringify(graph.graph_config)});
-        </script>
-      </div>
-    `).join('')
-
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>CSV Graph Chat - Graphs</title>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <style>
-          body { font-family: system-ui, sans-serif; padding: 20px; }
-          .chart-container { margin-bottom: 40px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
-          h3 { margin-top: 0; }
-        </style>
-      </head>
-      <body>
-        <h1>My Graphs</h1>
-        ${chartsHTML}
-      </body>
-      </html>
-    `
   }
 
   return (

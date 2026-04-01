@@ -138,6 +138,307 @@ const presets = {
         { source: '학사경고', target: '제적', value: 5 }
       ]
     }]
+  },
+  radar: {
+    title: { text: 'Radar Chart - 학생 역량 평가' },
+    tooltip: {},
+    radar: {
+      indicator: [
+        { name: '학점', max: 4.5 },
+        { name: '출석', max: 100 },
+        { name: '과제', max: 100 },
+        { name: '중간고사', max: 100 },
+        { name: '기말고사', max: 100 },
+        { name: '프로젝트', max: 100 }
+      ],
+      center: ['50%', '55%']
+    },
+    series: [{
+      type: 'radar',
+      data: [
+        {
+          value: [3.8, 95, 85, 78, 92, 88],
+          name: '학생 A'
+        },
+        {
+          value: [3.5, 88, 90, 85, 80, 75],
+          name: '학생 B'
+        }
+      ]
+    }]
+  },
+  polar: {
+    title: { text: 'Polar Chart - 학기별 활동량' },
+    tooltip: { trigger: 'item' },
+    angleAxis: {
+      type: 'category',
+      data: ['독서', '팀플', '발표', '시험', '과제', '자습']
+    },
+    radiusAxis: {},
+    polar: {},
+    series: [{
+      type: 'bar',
+      data: [45, 60, 35, 80, 55, 40],
+      coordinateSystem: 'polar',
+      name: '활동량',
+      stack: 'a'
+    }, {
+      type: 'bar',
+      data: [20, 35, 45, 30, 25, 30],
+      coordinateSystem: 'polar',
+      name: '참여도',
+      stack: 'a'
+    }]
+  },
+  graph: {
+    title: { text: 'Graph Chart - 친구 관계도' },
+    tooltip: { trigger: 'item' },
+    series: [{
+      type: 'graph',
+      layout: 'force',
+      symbolSize: 40,
+      roam: true,
+      label: { show: true, position: 'bottom' },
+      edgeSymbol: ['circle', 'arrow'],
+      edgeSymbolSize: [4, 10],
+      data: [
+        { name: '김同学', symbolSize: 60 },
+        { name: '이同学', symbolSize: 50 },
+        { name: '박同学', symbolSize: 45 },
+        { name: '정同学', symbolSize: 40 },
+        { name: '최同学', symbolSize: 35 },
+        { name: '강同学', symbolSize: 35 }
+      ],
+      links: [
+        { source: '김同学', target: '이同学', lineStyle: { width: 3 } },
+        { source: '김同学', target: '박同学', lineStyle: { width: 2 } },
+        { source: '이同学', target: '정同学', lineStyle: { width: 4 } },
+        { source: '박同学', target: '최同学', lineStyle: { width: 2 } },
+        { source: '정同学', target: '최同学', lineStyle: { width: 3 } },
+        { source: '최同学', target: '강同学', lineStyle: { width: 2 } }
+      ],
+      lineStyle: { opacity: 0.6, curveness: 0.2 }
+    }]
+  },
+  tree: {
+    title: { text: 'Tree Chart - 학과 구조' },
+    tooltip: { trigger: 'item' },
+    series: [{
+      type: 'tree',
+      data: [
+        {
+          name: '총장',
+          children: [
+            {
+              name: '교학처',
+              children: [
+                { name: '입시팀' },
+                { name: '교육팀' }
+              ]
+            },
+            {
+              name: '학생처',
+              children: [
+                { name: '학생지원팀' },
+                { name: '취업팀' }
+              ]
+            },
+            {
+              name: '기획처',
+              children: [
+                { name: '예산팀' },
+                { name: '시설팀' }
+              ]
+            }
+          ]
+        }
+      ],
+      label: { position: 'left', verticalAlign: 'middle', align: 'right' },
+      orient: 'LR'
+    }]
+  },
+  sunburst: {
+    title: { text: 'Sunburst Chart - 학점 분포' },
+    tooltip: { trigger: 'item' },
+    series: [{
+      type: 'sunburst',
+      data: [
+        {
+          name: '졸업요건',
+          children: [
+            {
+              name: '전공',
+              value: 60,
+              children: [
+                { name: '필수', value: 35 },
+                { name: '선택', value: 25 }
+              ]
+            },
+            {
+              name: '교양',
+              value: 30,
+              children: [
+                { name: '핵심', value: 15 },
+                { name: '일반', value: 15 }
+              ]
+            },
+            {
+              name: '일반선택',
+              value: 10
+            }
+          ]
+        }
+      ],
+      radius: ['15%', '80%'],
+      label: { rotate: 'radial' }
+    }]
+  },
+  treemap: {
+    title: { text: 'Treemap - 강의 평가 항목' },
+    tooltip: { trigger: 'item' },
+    series: [{
+      type: 'treemap',
+      data: [
+        {
+          name: '강의평가',
+          children: [
+            { name: '수업내용', value: 30 },
+            { name: '교수법', value: 25 },
+            { name: '성적기준', value: 20 },
+            { name: '자료제공', value: 15 },
+            { name: '答疑态度', value: 10 }
+          ]
+        }
+      ]
+    }]
+  },
+  parallel: {
+    title: { text: 'Parallel Chart - 학생 프로파일' },
+    tooltip: { trigger: 'item' },
+    parallelAxis: [
+      { dim: 0, name: '학점' },
+      { dim: 1, name: '출석률' },
+      { dim: 2, name: '과제점수' },
+      { dim: 3, name: '중간고사' },
+      { dim: 4, name: '기말고사' }
+    ],
+    series: [{
+      type: 'parallel',
+      data: [
+        [3.8, 95, 85, 78, 92],
+        [3.5, 88, 90, 85, 80],
+        [4.0, 100, 95, 90, 95],
+        [3.2, 75, 80, 70, 75],
+        [3.6, 90, 88, 82, 88]
+      ]
+    }]
+  },
+  gauge: {
+    title: { text: 'Gauge Chart - 학업 달성도' },
+    tooltip: { formatter: '{a} <br/>{b} : {c}%' },
+    series: [{
+      type: 'gauge',
+      detail: { formatter: '{value}%' },
+      data: [{ value: 78, name: '달성도' }],
+      min: 0,
+      max: 100
+    }]
+  },
+  funnel: {
+    title: { text: 'Funnel Chart - 입학->졸업 funnel' },
+    tooltip: { trigger: 'item' },
+    series: [{
+      type: 'funnel',
+      left: '10%',
+      top: 60,
+      bottom: 60,
+      width: '80%',
+      min: 0,
+      max: 100,
+      minSize: '0%',
+      maxSize: '100%',
+      gap: 2,
+      label: { show: true, position: 'inside' },
+      data: [
+        { value: 100, name: '입학' },
+        { value: 80, name: '2학년 진급' },
+        { value: 60, name: '3학년 진급' },
+        { value: 40, name: '4학년 진급' },
+        { value: 20, name: '졸업' }
+      ]
+    }]
+  },
+  candlestick: {
+    title: { text: 'Candlestick Chart - 주간 주가' },
+    tooltip: { trigger: 'item' },
+    xAxis: {
+      type: 'category',
+      data: ['周一', '周二', '周三', '周四', '周五']
+    },
+    yAxis: { type: 'value', scale: true },
+    series: [{
+      type: 'candlestick',
+      data: [
+        [20, 30, 10, 35],
+        [32, 35, 28, 38],
+        [30, 38, 25, 40],
+        [35, 42, 30, 45],
+        [40, 48, 35, 50]
+      ]
+    }]
+  },
+  
+  calendar: {
+    title: { text: 'Calendar Chart - 학습 시간 히트맵' },
+    tooltip: { trigger: 'item' },
+    visualMap: {
+      min: 0,
+      max: 10,
+      calculable: true,
+      orient: 'vertical',
+      left: 'right',
+      top: 'center'
+    },
+    calendar: {
+      range: '2024-01'
+    },
+    series: [{
+      type: 'heatmap',
+      coordinateSystem: 'calendar',
+      data: [
+        ['2024-01-01', 5],
+        ['2024-01-02', 3],
+        ['2024-01-03', 7],
+        ['2024-01-04', 2],
+        ['2024-01-05', 8],
+        ['2024-01-06', 6],
+        ['2024-01-07', 4],
+        ['2024-01-08', 5],
+        ['2024-01-09', 3],
+        ['2024-01-10', 6],
+        ['2024-01-11', 7],
+        ['2024-01-12', 4],
+        ['2024-01-13', 2],
+        ['2024-01-14', 8],
+        ['2024-01-15', 5],
+        ['2024-01-16', 3],
+        ['2024-01-17', 6],
+        ['2024-01-18', 7],
+        ['2024-01-19', 4],
+        ['2024-01-20', 2],
+        ['2024-01-21', 9],
+        ['2024-01-22', 5],
+        ['2024-01-23', 3],
+        ['2024-01-24', 6],
+        ['2024-01-25', 7],
+        ['2024-01-26', 4],
+        ['2024-01-27', 2],
+        ['2024-01-28', 8],
+        ['2024-01-29', 5],
+        ['2024-01-30', 3],
+        ['2024-01-31', 6]
+      ]
+    }]
   }
 }
 
@@ -146,6 +447,8 @@ function TestChartPage() {
   const [customConfig, setCustomConfig] = useState('')
   const [customConfigData, setCustomConfigData] = useState(null)
   const [error, setError] = useState(null)
+  const [configCollapsed, setConfigCollapsed] = useState(true)
+  const [currentConfigCollapsed, setCurrentConfigCollapsed] = useState(true)
 
   const currentConfig = customConfigData || presets[selectedPreset]
 
@@ -184,34 +487,66 @@ function TestChartPage() {
             <option value="boxplot">Boxplot Chart</option>
             <option value="heatmap">Heatmap Chart</option>
             <option value="sankey">Sankey Chart</option>
+            <option value="radar">Radar Chart</option>
+            <option value="polar">Polar Chart</option>
+            <option value="graph">Graph Chart</option>
+            <option value="tree">Tree Chart</option>
+            <option value="sunburst">Sunburst Chart</option>
+            <option value="treemap">Treemap Chart</option>
+            <option value="parallel">Parallel Chart</option>
+            <option value="gauge">Gauge Chart</option>
+            <option value="funnel">Funnel Chart</option>
+            <option value="candlestick">Candlestick Chart</option>
+            <option value="themeriver">ThemeRiver Chart</option>
+            <option value="calendar">Calendar Chart</option>
           </select>
         </div>
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">커스텀 Config JSON:</label>
-        <textarea
-          value={customConfig}
-          onChange={(e) => setCustomConfig(e.target.value)}
-          placeholder='{"series": [{"type": "bar", "data": [...]}]}'
-          className="w-full h-32 border rounded px-3 py-2 font-mono text-sm"
-        />
         <button
-          onClick={handleApplyCustom}
-          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={() => setConfigCollapsed(!configCollapsed)}
+          className="flex items-center gap-2 text-sm font-medium mb-2"
         >
-          Apply Custom Config
+          <span className="text-xs">{configCollapsed ? '▶' : '▼'}</span>
+          커스텀 Config JSON {configCollapsed ? '(접힘)' : '(펼침)'}
         </button>
-        {error && (
-          <p className="mt-2 text-red-500 text-sm">{error}</p>
+        
+        {!configCollapsed && (
+          <>
+            <textarea
+              value={customConfig}
+              onChange={(e) => setCustomConfig(e.target.value)}
+              placeholder='{"series": [{"type": "bar", "data": [...]}]}'
+              className="w-full h-32 border rounded px-3 py-2 font-mono text-sm"
+            />
+            <button
+              onClick={handleApplyCustom}
+              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Apply Custom Config
+            </button>
+            {error && (
+              <p className="mt-2 text-red-500 text-sm">{error}</p>
+            )}
+          </>
         )}
       </div>
 
       <div className="border-t pt-4">
-        <h2 className="text-lg font-medium mb-2">현재 Config:</h2>
-        <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto max-h-40 mb-4">
-          {JSON.stringify(currentConfig, null, 2)}
-        </pre>
+        <button
+          onClick={() => setCurrentConfigCollapsed(!currentConfigCollapsed)}
+          className="flex items-center gap-2 text-sm font-medium mb-2"
+        >
+          <span className="text-xs">{currentConfigCollapsed ? '▶' : '▼'}</span>
+          현재 Config {currentConfigCollapsed ? '(접힘)' : '(펼침)'}
+        </button>
+        
+        {!currentConfigCollapsed && (
+          <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto max-h-40 mb-4">
+            {JSON.stringify(currentConfig, null, 2)}
+          </pre>
+        )}
         <GraphView config={currentConfig} />
       </div>
     </div>
