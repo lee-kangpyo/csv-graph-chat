@@ -43,21 +43,30 @@ function BasketItem({ item, onDelete, onGraphClick }) {
   }
 
   const handleClick = () => {
+    if (!item.graph_config) return
     onGraphClick?.(item)
   }
+
+  const isLoading = item.isLoading || (!item.graph_config && !isLoaded)
 
   return (
     <div
       onClick={handleClick}
-      className="p-3 mb-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
+      className={`p-3 mb-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors ${!item.graph_config ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-purple-400 dark:hover:border-purple-500'}`}
     >
       <div className="flex gap-3">
         <div className="flex-shrink-0">
-          <div ref={previewRef} style={{ width: '150px', height: '100px' }} className={!isLoaded ? 'bg-gray-100 dark:bg-gray-700 animate-pulse' : ''}></div>
+          {isLoading ? (
+            <div className="w-[150px] h-[100px] bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            </div>
+          ) : (
+            <div ref={previewRef} style={{ width: '150px', height: '100px' }} className={!isLoaded ? 'bg-gray-100 dark:bg-gray-700 animate-pulse' : ''}></div>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-sm truncate mb-1">{item.name}</p>
-          <p className="text-xs text-gray-500">{graphType}</p>
+          <p className="text-xs text-gray-500">{isLoading ? 'Loading...' : graphType}</p>
         </div>
         <button
           onClick={(e) => {

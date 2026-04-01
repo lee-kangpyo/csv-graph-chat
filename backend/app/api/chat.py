@@ -106,7 +106,7 @@ class ChatRequest(BaseModel):
     csv_metadata: Optional[dict] = None
 
 
-async def generate_chat_response(message: str, csv_metadata: Optional[dict] = None):
+async def generate_chat_response(message: str, csv_metadata: Optional[dict] = None, request_id: Optional[str] = None):
     llm = LLMClient.get_instance()
 
     messages = []
@@ -128,15 +128,11 @@ async def generate_chat_response(message: str, csv_metadata: Optional[dict] = No
             yield {
                 "event": "message",
                 "data": json.dumps(
-                    {"content": chunk.choices[0].delta.content, "graph": None}
+                    {"content": chunk.choices[0].delta.content, "request_id": request_id}
                 ),
             }
 
-    graph = None
-    if detect_chart_request(message):
-        graph = generate_chart_from_file(message, csv_metadata)
-
-    yield {"event": "done", "data": json.dumps({"done": True, "graph": graph})}
+    yield {"event": "done", "data": json.dumps({"done": True, "request_id": request_id})}
 
 
 @router.post("/stream")
@@ -144,8 +140,9 @@ async def chat_stream(request: Request):
     body = await request.json()
     message = body.get("message", "")
     csv_metadata = body.get("csv_metadata")
+    request_id = body.get("request_id")
 
-    return EventSourceResponse(generate_chat_response(message, csv_metadata))
+    return EventSourceResponse(generate_chat_response(message, csv_metadata, request_id))
 
 
 @router.post("/")

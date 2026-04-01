@@ -1,0 +1,5 @@
+name: improve-chat-markdown-rendering
+created: 2026-04-01
+schema: spec-driven
+description: Add markdown rendering to chat messages for better readability
+status: in_progress
