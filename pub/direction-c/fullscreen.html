@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Direction C: Modern Dark - Fullscreen</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Noto Sans KR', sans-serif; }
+    body { background: #0a0a0f; }
+  </style>
+</head>
+<body class="bg-[#0a0a0f] h-screen flex flex-col">
+
+  <!-- Minimal Header -->
+  <header class="h-12 flex items-center justify-between px-6">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-cyan-400/30">
+        <span class="text-white text-xs font-bold">CG</span>
+      </div>
+      <span class="text-sm font-medium text-zinc-300">성과지표 분석</span>
+    </div>
+    <button class="p-2 rounded-lg hover:bg-zinc-800/50 text-zinc-500">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </header>
+
+  <!-- Main: Fullscreen Chart -->
+  <main class="flex-1 p-6 flex gap-4">
+    <!-- Side Panel (Collapsed) -->
+    <aside class="w-0 bg-zinc-900/80 backdrop-blur-sm rounded-xl overflow-hidden transition-all duration-300 hover:w-64 border border-zinc-800/50">
+      <div class="p-4">
+        <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">내 차트</h3>
+        <div class="space-y-2">
+          <div class="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/30">
+            <p class="text-sm font-medium text-zinc-200">학과별 평점 분포</p>
+            <p class="text-xs text-zinc-500 mt-1">boxplot</p>
+          </div>
+          <div class="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/30">
+            <p class="text-sm font-medium text-zinc-200">학생 추세 분석</p>
+            <p class="text-xs text-zinc-500 mt-1">line</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Chart Canvas -->
+    <div class="flex-1 bg-gradient-to-br from-zinc-900 to-zinc-900/50 rounded-2xl border border-zinc-800/50 p-8 flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-semibold text-white">학과별 평점 분포</h2>
+          <p class="text-sm text-zinc-500 mt-0.5">2024학년도 1학기 기준</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="px-4 py-2 text-sm border border-zinc-700 text-zinc-400 rounded-lg hover:bg-zinc-800 hover:text-zinc-300 transition-colors">CSV</button>
+          <button class="px-4 py-2 text-sm bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg hover:opacity-90 shadow-lg shadow-cyan-500/20">HTML 내보내기</button>
+        </div>
+      </div>
+      <div id="mainChart" class="flex-1" style="min-height: 400px;"></div>
+    </div>
+  </main>
+
+  <!-- Chat Drawer -->
+  <div class="bg-zinc-900/80 backdrop-blur-xl border-t border-zinc-800/50 shadow-2xl">
+    <div class="max-w-3xl mx-auto p-5">
+      <div class="flex gap-3">
+        <button class="p-3 rounded-xl bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-zinc-400 shadow-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        </button>
+        <input type="text" placeholder="차트에 대해 질문하거나 새 분석을 요청하세요..." class="flex-1 px-5 py-3 rounded-xl border border-zinc-700 text-sm bg-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-lg">
+        <button class="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 shadow-lg shadow-cyan-500/20">전송</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var chart = echarts.init(document.getElementById('mainChart'));
+    chart.setOption({
+      backgroundColor: 'transparent',
+      grid: { top: 50, right: 50, bottom: 80, left: 80 },
+      legend: { top: 15, right: 15, textStyle: { color: '#a1a1aa' } },
+      xAxis: { 
+        type: 'category', 
+        data: ['공과대학', '인문대학', '자연대학', '예술대학', '의과대학', '경영대학'], 
+        axisLabel: { color: '#a1a1aa', fontSize: 12 }, 
+        splitLine: { show: false }, 
+        axisLine: { lineStyle: { color: '#27272a' } } 
+      },
+      yAxis: { 
+        type: 'value', 
+        name: '평점 (GPA)', 
+        nameTextStyle: { color: '#a1a1aa', fontSize: 12 }, 
+        axisLabel: { color: '#a1a1aa' }, 
+        splitLine: { lineStyle: { color: '#1a1a1f' } }, 
+        axisLine: { lineStyle: { color: '#27272a' } } 
+      },
+      series: [{
+        name: '2024-1',
+        type: 'boxplot',
+        data: [[2.1,3.2,3.5,3.8,4.2],[2.5,3.0,3.4,3.7,4.0],[1.8,2.8,3.2,3.5,4.1],[2.3,3.1,3.5,3.9,4.3],[2.8,3.3,3.6,3.9,4.2],[2.4,3.0,3.3,3.6,4.0]],
+        itemStyle: { 
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#06B6D4' },
+            { offset: 1, color: '#3B82F6' }
+          ]), 
+          borderColor: '#06B6D4',
+          borderWidth: 2
+        }
+      }],
+      tooltip: { trigger: 'item', backgroundColor: '#18181b', borderColor: '#27272a', textStyle: { color: '#e4e4e7' } }
+    });
+    window.addEventListener('resize', () => chart.resize());
+  </script>
+</body>
+</html>

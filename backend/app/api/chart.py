@@ -23,7 +23,7 @@ class ChartGenerateResponse(BaseModel):
 
 
 @router.post("/generate")
-async def generate_chart(request: ChartGenerateRequest):
+def generate_chart(request: ChartGenerateRequest):
     logger.info(f"[CHART] /api/chart/generate 호출 - request_id: {request.request_id}")
 
     if not request.message:

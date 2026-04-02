@@ -7,12 +7,6 @@ import useBasketStore from '../stores/basketStore'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-const CHART_KEYWORDS = ["차트", "그래프", "그려", "시각화", "chart", "graph", "plot", "visualize"]
-
-function detectChartRequest(message) {
-  const messageLower = message.toLowerCase()
-  return CHART_KEYWORDS.some(keyword => messageLower.includes(keyword))
-}
 
 function ChatInput({ onShowToast }) {
   const [input, setInput] = useState('')
@@ -24,26 +18,6 @@ function ChatInput({ onShowToast }) {
   const setLoading = useChatStore((state) => state.setLoading)
   const addItem = useBasketStore((state) => state.addItem)
   const removeItem = useBasketStore((state) => state.removeItem)
-
-  const generateGraphName = (question) => {
-    if (!question || question.trim() === '') {
-      return `Graph ${Date.now()}`
-    }
-
-    let name = question.trim()
-
-    name = name.replace(/[^\w\s-]/g, '')
-
-    if (name.length > 50) {
-      name = name.substring(0, 47) + '...'
-    }
-
-    if (!name || name.trim() === '') {
-      return `Graph ${Date.now()}`
-    }
-
-    return name
-  }
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0]
@@ -82,6 +56,18 @@ function ChatInput({ onShowToast }) {
     
     const userMessage = input.trim()
     const requestId = `req-${Date.now()}`
+    
+    const userMessageLower = userMessage.toLowerCase()
+    const BATCH_KEYWORDS = ["다 그려", "전부 그려", "모두 그려", "다 만들어", "전부 만들어"]
+    const isBatchRequest = BATCH_KEYWORDS.some(k => userMessageLower.includes(k))
+    const currentMessages = useChatStore.getState().messages
+    const lastMsg = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1] : null
+    let suggestionsToBatch = []
+
+    if (isBatchRequest && lastMsg && lastMsg.role === 'ai' && lastMsg.suggestions?.length > 0) {
+      suggestionsToBatch = lastMsg.suggestions
+    }
+
     setInput('')
     setSending(true)
     setLoading(true)
@@ -96,23 +82,8 @@ function ChatInput({ onShowToast }) {
       row_count: csvData.rowCount
     } : null
 
-    const isChartRequest = detectChartRequest(userMessage)
-    let placeholderId = null
-    const graphName = generateGraphName(userMessage)
-
-    if (isChartRequest) {
-      placeholderId = `loading-${Date.now()}`
-      addItem({
-        id: placeholderId,
-        name: graphName,
-        graph_config: null,
-        question: userMessage,
-        isLoading: true
-      })
-    }
-
-    const ssePromise = new Promise((resolve, reject) => {
-      fetch(`${API_BASE}/api/chat/stream`, {
+    try {
+      const response = await fetch(`${API_BASE}/api/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -121,83 +92,128 @@ function ChatInput({ onShowToast }) {
           request_id: requestId
         }),
       })
-      .then(response => {
-        if (!response.ok) throw new Error('SSE failed')
-        const reader = response.body.getReader()
-        const decoder = new TextDecoder()
-        let buffer = ''
 
-        const read = () => {
-          reader.read().then(({ done, value }) => {
-            if (done) {
-              resolve()
-              return
-            }
-            buffer += decoder.decode(value, { stream: true })
-            const lines = buffer.split('\n')
-            buffer = lines.pop() || ''
-            
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                try {
-                  const data = JSON.parse(line.slice(6))
-                  if (data.content) {
-                    useChatStore.setState((state) => {
-                      const messages = [...state.messages]
-                      const lastMessage = messages[messages.length - 1]
-                      if (lastMessage && lastMessage.role === 'ai') {
-                        messages[messages.length - 1] = { ...lastMessage, content: (lastMessage.content || '') + data.content }
-                      }
-                      return { messages }
-                    })
-                  }
-                } catch (e) {}
-              }
-            }
-            read()
-          })
-        }
-        read()
-      })
-      .catch(reject)
-    })
-
-    const chartPromise = isChartRequest ? fetch(`${API_BASE}/api/chart/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: userMessage,
-        csv_metadata: csvMetadata,
-        request_id: requestId
-      }),
-    }).then(async response => {
-      if (!response.ok) throw new Error('Chart generation failed')
-      return response.json()
-    }) : Promise.resolve({ graph: null })
-
-    try {
-      await ssePromise
-      const chartResult = await chartPromise
+      if (!response.ok) throw new Error('SSE failed')
       
-      if (isChartRequest && chartResult.graph && typeof chartResult.graph === 'object') {
-        if (placeholderId) removeItem(placeholderId)
-        createBasket(graphName, chartResult.graph, userMessage)
-          .then((response) => {
-            addItem({
-              id: response.id,
-              name: response.name,
-              graph_config: response.graph_config,
-              question: userMessage
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let fullText = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+              if (data.content) {
+                fullText += data.content
+                
+                let cleanText = fullText
+                const currentSuggestions = []
+                
+                cleanText = cleanText.replace(/\[SUGGESTION:(\{[\s\S]*?\})\]/g, (match, jsonStr) => {
+                  try {
+                    const parsed = JSON.parse(jsonStr)
+                    currentSuggestions.push(parsed)
+                    return ''
+                  } catch {
+                    return match
+                  }
+                })
+                
+                let displayText = cleanText
+                const unclosedMatch = displayText.match(/\[[^\]]*$/)
+                if (unclosedMatch) {
+                  const tail = unclosedMatch[0]
+                  if ("[SUGGESTION:".startsWith(tail.substring(0, 12)) || tail.startsWith("[SUGGESTION:")) {
+                    displayText = displayText.substring(0, unclosedMatch.index)
+                  }
+                }
+
+                useChatStore.setState((state) => {
+                  const messages = [...state.messages]
+                  const lastMessage = messages[messages.length - 1]
+                  if (lastMessage && lastMessage.role === 'ai') {
+                    messages[messages.length - 1] = { 
+                      ...lastMessage, 
+                      content: displayText,
+                      suggestions: currentSuggestions
+                    }
+                  }
+                  return { messages }
+                })
+              }
+            } catch {
+              // JSON parse error - ignore
+            }
+          }
+        }
+      }
+
+      if (suggestionsToBatch.length > 0) {
+        onShowToast(`Starting batch generation for ${suggestionsToBatch.length} charts...`, 'success')
+        for (let i = 0; i < suggestionsToBatch.length; i++) {
+          const sug = suggestionsToBatch[i]
+          const placeholderId = `loading-${Date.now()}-${i}`
+          const graphName = sug.title || `Graph ${Date.now()}`
+          const question = sug.description || sug.title
+          
+          addItem({
+            id: placeholderId,
+            name: graphName,
+            graph_config: null,
+            question: question,
+            isLoading: true
+          })
+          
+          try {
+            onShowToast(`${i+1}/${suggestionsToBatch.length} 차트 생성 중...`, 'info')
+            const chartResponse = await fetch(`${API_BASE}/api/chart/generate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                message: `${sug.chart_type} 차트로 그려줘: ${sug.title}`,
+                csv_metadata: csvMetadata,
+                request_id: requestId + `-batch-${i}`
+              })
             })
-          })
-          .catch((err) => {
-            onShowToast('Failed to save graph to Basket', 'error')
-          })
-      } else if (placeholderId) {
-        removeItem(placeholderId)
+            
+            if (!chartResponse.ok) throw new Error('Chart generation failed')
+            const chartResult = await chartResponse.json()
+            
+            if (chartResult.graph) {
+              removeItem(placeholderId)
+              try {
+                 const createResult = await createBasket(graphName, chartResult.graph, question)
+                 addItem({
+                   id: createResult.id,
+                   name: createResult.name,
+                   graph_config: createResult.graph_config,
+                   question: question
+                 })
+                 onShowToast(`${i+1}/${suggestionsToBatch.length} 차트 생성 완료`, 'success')
+              } catch {
+                 removeItem(placeholderId)
+                 onShowToast(`Failed to save chart ${i+1} to basket`, 'error')
+              }
+            } else {
+               throw new Error('Graph generation returned null')
+            }
+          } catch {
+             removeItem(placeholderId)
+             onShowToast(`Failed to generate chart ${i+1}`, 'error')
+          }
+        }
+        onShowToast(`모든 차트 생성이 완료되었습니다.`, 'success')
       }
     } catch (err) {
-      if (placeholderId) removeItem(placeholderId)
       onShowToast(err.message || 'Chat failed', 'error')
     } finally {
       setSending(false)

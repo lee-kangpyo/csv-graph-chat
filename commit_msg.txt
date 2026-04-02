@@ -1,6 +1,8 @@
-feat: 채팅 응답 마크다운 렌더링 및 가이드형 차트 추천 스펙 추가
+feat: 구조화된 차트 추천 태그와 액션 칩·배치 생성 연동
 
-- feat: AI 응답에 react-markdown을 적용하여 마크다운(코드블록, 리스트 등) 렌더링 지원 (improve-chat-markdown-rendering 적용 및 아카이브)
-- refactor: 텍스트 스트리밍과 차트 생성 API의 병렬 요청 처리 안정화 (split-chat-chart-parallel 적용 및 아카이브)
-- spec: LLM Rate Limit 방지 및 사용자 경험 개선을 위한 가이드형 차트 추천 기능(guided-chart-suggestions) 제안서, 설계, 스펙, 태스크 작성
-- docs: 각 기능 변경점에 맞추어 메인 스펙 내용 동기화 완료
+- 백엔드: 인사이트 추천 프롬프트에 [SUGGESTION:JSON] 출력 규칙 추가
+- 채팅 API: 스트림 요청용 ChatStreamRequest 및 동기 스트림 핸들러 정리
+- 프론트: SSE에서 추천 태그 파싱, 메시지별 suggestions 및 일괄 차트 생성
+- UI: AI 메시지에 ActionChips로 추천 선택 시 바구니 연동 차트 생성
+- OpenSpec: guided-chart-suggestions 아카이브·메인 스펙 동기화, enhanced-data-insight 등 변경 반영
+- pub: 방향별 정적 프로토타입 HTML 추가

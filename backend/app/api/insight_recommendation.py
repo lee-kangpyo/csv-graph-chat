@@ -53,11 +53,24 @@ Based on the data structure detected (dates, numbers, or categories), you SHOULD
 - "시계열 추이" (Time Series Trend/Line): Show trends over time.
 - "그룹별 다이내믹 비교" (Group Comparison/Bar/Pie/Radar): Rank values or compare multi-dimensional scores.
 
-Suggest 2-3 specific, actionable analysis questions (e.g. "어느 단과대학에서 학사경고 후 제적되는 흐름이 가장 많은지 산키 다이어그램으로 볼까요?") based on the actual columns provided."""
+You MUST suggest 2-3 specific, actionable analysis methods based on the actual columns provided.
+
+IMPORTANT: For EACH generated recommendation, you MUST append a structured tag at the very end of your response message.
+The tag must be exactly in this format:
+[SUGGESTION:{"title":"(Korean title)", "chart_type":"(one of: bar, line, scatter, stacked_bar, pie, boxplot, heatmap, sankey, dual_axis, scatter_visualmap, radar)", "description":"(1 sentence Korean description)"}]
+Do not put the tag inside a code block. Output it as plain text. Explain the insights conversationally, and then put all tags at the bottom.
+"""
     else:
         base_prompt += f"""
 
 The user specifically asked: "{user_question}"
+
+If the user is asking for a chart, visualization, or data analysis, you MUST suggest 2-3 specific, actionable analysis methods based on the columns. 
+For EACH generated recommendation, you MUST append a structured tag at the very end of your response message.
+The tag must be exactly in this format:
+[SUGGESTION:{{"title":"(Korean title)", "chart_type":"(one of: bar, line, scatter, stacked_bar, pie, boxplot, heatmap, sankey, dual_axis, scatter_visualmap, radar)", "description":"(1 sentence Korean description)"}}]
+
+If the user is NOT asking for charts or data analysis (e.g. general chat, greetings), DO NOT include any [SUGGESTION:...] tags. Just respond conversationally.
 """
 
     base_prompt += """

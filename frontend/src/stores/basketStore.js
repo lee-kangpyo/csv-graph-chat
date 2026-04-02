@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-const useBasketStore = create((set, get) => ({
+const useBasketStore = create((set) => ({
   items: [],
   loading: false,
   

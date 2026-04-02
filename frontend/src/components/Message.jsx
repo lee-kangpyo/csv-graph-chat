@@ -1,6 +1,7 @@
 import ReactMarkdown from 'react-markdown'
+import ActionChips from './ActionChips'
 
-function Message({ role, content }) {
+function Message({ role, content, suggestions, onShowToast }) {
   const isAI = role === 'assistant' || role === 'ai'
   
   const markdownStyles = {
@@ -39,7 +40,7 @@ function Message({ role, content }) {
               ul: ({ children }) => <ul className={markdownStyles.ul}>{children}</ul>,
               ol: ({ children }) => <ol className={markdownStyles.ol}>{children}</ol>,
               li: ({ children }) => <li className={markdownStyles.li}>{children}</li>,
-              code: ({ node, inline, className, children, ...props }) => {
+              code: ({ inline, children, ...props }) => {
                 if (inline) {
                   return <code className={markdownStyles.code} {...props}>{children}</code>
                 }
@@ -66,6 +67,10 @@ function Message({ role, content }) {
           </ReactMarkdown>
         ) : (
           <p className="text-gray-800 dark:text-gray-100">{content}</p>
+        )}
+        
+        {isAI && suggestions && suggestions.length > 0 && (
+          <ActionChips suggestions={suggestions} onShowToast={onShowToast} />
         )}
       </div>
     </div>

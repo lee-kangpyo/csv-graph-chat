@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Direction A: Clean Business - Fullscreen</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Noto Sans KR', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col">
+
+  <!-- Minimal Header -->
+  <header class="h-12 flex items-center justify-between px-6 bg-white border-b border-gray-100">
+    <div class="flex items-center gap-2">
+      <div class="w-6 h-6 bg-violet-600 rounded-md flex items-center justify-center">
+        <span class="text-white text-xs font-bold">CG</span>
+      </div>
+      <span class="text-sm font-medium text-gray-700">성과지표 분석</span>
+    </div>
+    <button class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </header>
+
+  <!-- Main: Fullscreen Chart Area -->
+  <main class="flex-1 flex">
+    <!-- Side Panel (Collapsed) -->
+    <aside class="w-0 bg-white border-r border-gray-100 overflow-hidden transition-all duration-300 hover:w-64">
+      <div class="p-4">
+        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">생성된 차트</h3>
+        <div class="space-y-2">
+          <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <p class="text-sm font-medium text-gray-800">학과별 평점 분포</p>
+            <p class="text-xs text-gray-500 mt-1">boxplot</p>
+          </div>
+          <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <p class="text-sm font-medium text-gray-800">학생 추세 분석</p>
+            <p class="text-xs text-gray-500 mt-1">line</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Chart Canvas -->
+    <div class="flex-1 p-8 flex flex-col">
+      <div class="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900">학과별 평점 분포</h2>
+            <p class="text-sm text-gray-500 mt-0.5">2024학년도 1학기 기준</p>
+          </div>
+          <div class="flex gap-2">
+            <button class="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">CSV 다운로드</button>
+            <button class="px-3 py-1.5 text-xs bg-violet-600 text-white rounded-lg hover:bg-violet-700">HTML 내보내기</button>
+          </div>
+        </div>
+        <div id="mainChart" class="w-full h-full" style="min-height: 400px;"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Chat Drawer from Bottom -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+    <div class="max-w-3xl mx-auto p-4">
+      <div class="flex gap-3">
+        <button class="p-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        </button>
+        <input type="text" placeholder="차트에 대해 질문하거나 새 분석을 요청하세요..." class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500">
+        <button class="px-5 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-medium hover:bg-violet-700">전송</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var chart = echarts.init(document.getElementById('mainChart'));
+    chart.setOption({
+      grid: { top: 40, right: 40, bottom: 60, left: 60 },
+      legend: { top: 10, right: 10 },
+      xAxis: { 
+        type: 'category', 
+        data: ['공과대학', '인문대학', '자연대학', '예술대학', '의과대학', '경영대학'],
+        axisLabel: { fontSize: 12 }
+      },
+      yAxis: { type: 'value', name: '평점 (GPA)', nameTextStyle: { fontSize: 12 } },
+      series: [
+        {
+          name: '2024-1',
+          type: 'boxplot',
+          data: [[2.1, 3.2, 3.5, 3.8, 4.2], [2.5, 3.0, 3.4, 3.7, 4.0], [1.8, 2.8, 3.2, 3.5, 4.1], [2.3, 3.1, 3.5, 3.9, 4.3], [2.8, 3.3, 3.6, 3.9, 4.2], [2.4, 3.0, 3.3, 3.6, 4.0]],
+          itemStyle: { color: '#7C3AED', borderColor: '#7C3AED' }
+        }
+      ],
+      tooltip: { trigger: 'item' }
+    });
+    window.addEventListener('resize', () => chart.resize());
+  </script>
+</body>
+</html>

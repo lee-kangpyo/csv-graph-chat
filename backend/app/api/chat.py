@@ -105,8 +105,13 @@ class ChatRequest(BaseModel):
     message: str
     csv_metadata: Optional[dict] = None
 
+class ChatStreamRequest(BaseModel):
+    message: str = ""
+    csv_metadata: Optional[dict] = None
+    request_id: Optional[str] = None
 
-async def generate_chat_response(message: str, csv_metadata: Optional[dict] = None, request_id: Optional[str] = None):
+
+def generate_chat_response(message: str, csv_metadata: Optional[dict] = None, request_id: Optional[str] = None):
     llm = LLMClient.get_instance()
 
     messages = []
@@ -136,17 +141,12 @@ async def generate_chat_response(message: str, csv_metadata: Optional[dict] = No
 
 
 @router.post("/stream")
-async def chat_stream(request: Request):
-    body = await request.json()
-    message = body.get("message", "")
-    csv_metadata = body.get("csv_metadata")
-    request_id = body.get("request_id")
-
-    return EventSourceResponse(generate_chat_response(message, csv_metadata, request_id))
+def chat_stream(req: ChatStreamRequest):
+    return EventSourceResponse(generate_chat_response(req.message, req.csv_metadata, req.request_id))
 
 
 @router.post("/")
-async def chat(request: ChatRequest):
+def chat(request: ChatRequest):
     llm = LLMClient.get_instance()
 
     messages = []

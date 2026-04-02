@@ -10,7 +10,7 @@ function BasketItem({ item, onDelete, onGraphClick }) {
   useEffect(() => {
     if (!previewRef.current || !item.graph_config || typeof item.graph_config !== 'object' || Array.isArray(item.graph_config)) return
 
-    setIsLoaded(false)
+
 
     if (chartRef.current) {
       chartRef.current.dispose()
@@ -25,22 +25,16 @@ function BasketItem({ item, onDelete, onGraphClick }) {
 
     miniChart.setOption(scaledConfig)
     chartRef.current = miniChart
-    setIsLoaded(true)
+    requestAnimationFrame(() => {
+      setIsLoaded(true)
+    })
 
     return () => {
       chartRef.current?.dispose()
     }
-  }, [item.graph_config])
+  }, [item.graph_config, isLoaded])
 
-  const getTypeIcon = () => {
-    switch (graphType) {
-      case 'line': return '📈'
-      case 'bar': return '📊'
-      case 'doughnut': return '🍩'
-      case 'scatter': return '⚬'
-      default: return '📈'
-    }
-  }
+
 
   const handleClick = () => {
     if (!item.graph_config) return

@@ -51,7 +51,13 @@ function ChatArea({ onShowToast }) {
         )}
         
         {messages.map((msg, idx) => (
-          <Message key={idx} role={msg.role} content={msg.content} />
+          <Message 
+            key={idx} 
+            role={msg.role} 
+            content={msg.content} 
+            suggestions={msg.suggestions} 
+            onShowToast={onShowToast} 
+          />
         ))}
         
         <div ref={messagesEndRef} />

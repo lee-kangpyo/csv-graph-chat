@@ -4,8 +4,8 @@ const useChatStore = create((set) => ({
   messages: [],
   isLoading: false,
   
-  addMessage: (role, content) => set((state) => ({
-    messages: [...state.messages, { role, content, timestamp: Date.now() }]
+  addMessage: (role, content, suggestions = []) => set((state) => ({
+    messages: [...state.messages, { role, content, timestamp: Date.now(), suggestions }]
   })),
   
   clearMessages: () => set({ messages: [] }),

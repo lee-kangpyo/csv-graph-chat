@@ -46,7 +46,6 @@ export const createSSEStream = (message, csvMetadata = null, onMessage, onStatus
 
           for (const line of lines) {
             if (line.startsWith('event:')) {
-              const eventType = line.slice(6).trim()
               continue
             }
             if (line.startsWith('data:')) {
@@ -62,7 +61,7 @@ export const createSSEStream = (message, csvMetadata = null, onMessage, onStatus
                 if (data.status) {
                   onStatus?.(data.status)
                 }
-              } catch (e) {
+              } catch {
                 // ignore parse errors for non-JSON data
               }
             }

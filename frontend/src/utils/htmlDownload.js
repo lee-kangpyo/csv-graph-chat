@@ -44,12 +44,4 @@ export const downloadHTML = (graphs, filename = 'graphs.html') => {
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
-
-const escapeHTML = (str) => {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
-}
+

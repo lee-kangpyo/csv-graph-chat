@@ -9,25 +9,23 @@ function BasketSidebar({ onShowToast, onGraphClick }) {
   const error = null
 
   useEffect(() => {
-    fetchBaskets()
-  }, [])
-
-  const fetchBaskets = async () => {
-    try {
-      const response = await axios.get('/api/basket/')
-      setItems(Array.isArray(response.data) ? response.data : [])
-    } catch (err) {
-      console.error('Failed to fetch baskets:', err)
-      onShowToast?.('Failed to load baskets', 'error')
+    const fetchBaskets = async () => {
+      try {
+        const response = await axios.get('/api/basket/')
+        setItems(Array.isArray(response.data) ? response.data : [])
+      } catch {
+        onShowToast?.('Failed to load baskets', 'error')
+      }
     }
-  }
+    fetchBaskets()
+  }, [onShowToast, setItems])
 
   const handleDelete = async (id) => {
     try {
       await axios.delete(`/api/basket/${id}`)
       removeItem(id)
       onShowToast?.('Graph deleted from basket', 'success')
-    } catch (err) {
+    } catch {
       onShowToast?.('Failed to delete graph', 'error')
     }
   }
@@ -41,7 +39,7 @@ function BasketSidebar({ onShowToast, onGraphClick }) {
     try {
       downloadHTML(items)
       onShowToast?.('Download started', 'success')
-    } catch (err) {
+    } catch {
       onShowToast?.('Failed to download', 'error')
     }
   }
